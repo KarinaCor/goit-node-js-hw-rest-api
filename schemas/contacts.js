@@ -6,13 +6,6 @@ const Joi = require("joi");
 //   phone: Joi.string().required(),
 // });
 
-// const contactUpdateSchema = Joi.object({
-//   name: Joi.string(),
-//   email: Joi.string(),
-//   phone: Joi.string(),
-// });
-
-// module.exports = { contactAddSchema, contactUpdateSchema };
 
 const contactAddSchema = Joi.object({
   name: Joi.string().required(),
