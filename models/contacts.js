@@ -1,75 +1,111 @@
-const fs = require("node:fs/promises");
-const path = require("node:path");
-const crypto = require("node:crypto");
+const { Schema, model } = require("mongoose");
 
-const contactsPath = path.join(__dirname, "/contacts.json");
+const { MongooseError } = require("../helpers");
 
-const listContacts = async () => {
-  const data = await fs.readFile(contactsPath);
-
-  return JSON.parse(data);
-};
-
-const writeContacts = (contacts) =>
-  fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-
-const getContactById = async (contactId) => {
-  const contacts = await listContacts();
-
-  const contact = contacts.find((contact) => contact.id === contactId);
-
-  return contact || null;
-};
-
-const removeContact = async (contactId) => {
-  const contacts = await listContacts();
-  const index = contacts.findIndex((contact) => contact.id === contactId);
-
-  if (index === -1) {
-    return null;
+const contactSchema = new Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "Set name for contact"],
+    },
+    email: {
+      type: String,
+    },
+    phone: {
+      type: String,
+      match: /^\(\d{3}\)\s\d{3}-\d{4}$/,
+    },
+    favorite: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  {
+    versionKey: false,
+    timestamps: true,
   }
+);
 
-  const newContacts = [
-    ...contacts.slice(0, index),
-    ...contacts.slice(index + 1),
-  ];
+contactSchema.post("save", MongooseError);
 
-  await writeContacts(newContacts);
-
-  return contacts[index];
-};
-
-const addContact = async (body) => {
-  const contacts = await listContacts();
-  const newContact = { ...body, id: crypto.randomUUID() };
-
-  contacts.push(newContact);
-
-  await writeContacts(contacts); 
-
-
-  return newContact;
-  
-};
-
-const updateContact = async (contactId, body) => {
-  const contacts = await listContacts();  
-  const index = contacts.findIndex((contact) => contact.id === contactId);
-
-  if (index === -1) {
-    return null;
-  }
-  contacts[index] = { ...body, id: contactId };
-
-  await fs.writeFile(contactsPath, JSON.stringify(contacts));
-
-  return contacts[index];
-};
+const Contact = model("contact", contactSchema);
 
 module.exports = {
-  listContacts,
-  getContactById,
-  removeContact,
-  addContact,
-  updateContact,
+  Contact
+ 
 };
+
+// const fs = require("node:fs/promises");
+// const path = require("node:path");
+// const crypto = require("node:crypto");
+
+// const contactsPath = path.join(__dirname, "/contacts.json");
+
+// const listContacts = async () => {
+//   const data = await fs.readFile(contactsPath);
+
+//   return JSON.parse(data);
+// };
+
+// const writeContacts = (contacts) =>
+//   fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+
+// const getContactById = async (contactId) => {
+//   const contacts = await listContacts();
+
+//   const contact = contacts.find((contact) => contact.id === contactId);
+
+//   return contact || null;
+// };
+
+// const removeContact = async (contactId) => {
+//   const contacts = await listContacts();
+//   const index = contacts.findIndex((contact) => contact.id === contactId);
+
+//   if (index === -1) {
+//     return null;
+//   }
+
+//   const newContacts = [
+//     ...contacts.slice(0, index),
+//     ...contacts.slice(index + 1),
+//   ];
+
+//   await writeContacts(newContacts);
+
+//   return contacts[index];
+// };
+
+// const addContact = async (body) => {
+//   const contacts = await listContacts();
+//   const newContact = { ...body, id: crypto.randomUUID() };
+
+//   contacts.push(newContact);
+
+//   await writeContacts(contacts);
+
+//   return newContact;
+
+// };
+
+// const updateContact = async (contactId, body) => {
+//   const contacts = await listContacts();
+//   const index = contacts.findIndex((contact) => contact.id === contactId);
+
+//   if (index === -1) {
+//     return null;
+//   }
+//   contacts[index] = { ...body, id: contactId };
+
+//   await fs.writeFile(contactsPath, JSON.stringify(contacts));
+
+//   return contacts[index];
+// };
+
+// module.exports = {
+//   listContacts,
+//   getContactById,
+//   removeContact,
+//   addContact,
+//   updateContact,
+// };
