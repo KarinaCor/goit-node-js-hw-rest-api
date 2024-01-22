@@ -1,6 +1,7 @@
 const { Contact } = require("../models/contacts");
 
-const { HttpError } = require("../helpers");
+const { HttpError, ctrlWrapper } = require("../helpers");
+
 
 const getAll = async (req, res, next) => {
   const contacts = await Contact.find();
@@ -57,10 +58,12 @@ const updateFavorite = async (req, res, next) => {
 };
 
 module.exports = {
-  getAll,
-  getById,
-  addContactById,
-  deleteContactById,
-  updateContactById,
-  updateFavorite,
+  getAll: ctrlWrapper(getAll),
+  getById: ctrlWrapper(getById),
+  addContactById: ctrlWrapper(addContactById),
+  deleteContactById: ctrlWrapper(deleteContactById),
+  updateContactById: ctrlWrapper(updateContactById),
+  updateFavorite: ctrlWrapper(updateFavorite),
 };
+
+
