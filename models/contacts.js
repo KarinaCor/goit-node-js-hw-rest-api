@@ -19,6 +19,10 @@ const contactSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    ownerId: {
+      type: Schema.Types.ObjectId,
+      ref: "user",
+    },
   },
   {
     versionKey: false,
@@ -31,7 +35,5 @@ contactSchema.post("save", MongooseError);
 const Contact = model("contact", contactSchema);
 
 module.exports = {
-  Contact
- 
+  Contact,
 };
-

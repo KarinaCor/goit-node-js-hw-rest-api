@@ -35,6 +35,7 @@ router.patch(
 
 router.put(
   "/:contactId",
+
   validateBody(contactUpdateSchema),
   validateIsBodyEmpty,
   ctrl.updateContactById
