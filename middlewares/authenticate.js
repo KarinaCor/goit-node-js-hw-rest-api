@@ -8,33 +8,27 @@ const authenticate = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (typeof authHeader === "undefined") {
-    return res.status(401).send({ message: "Invalid token" });
+    return res.status(401).send({ message: "Not authorized" });
   }
 
   const [bearer, token] = authHeader.split(" ", 2);
   if (bearer !== "Bearer") {
-    next(HttpError(401, "Invalid token"));
+    next(HttpError(401, "Not authorized"));
   }
 
   jwt.verify(token, JWT_SECRET, async (err, decode) => {
     if (err) {
-      next(HttpError(401, "Invalid token"));
+      next(HttpError(401, "Not authorized"));
     }
-
-    req.user = {
-      id: decode.id,
-      name: decode.name,
-    };
 
     const user = await User.findById(decode.id);
-    if (user === null) {
-      next(HttpError(401, "Invalid token"));
-    }
 
-    if (user.token !== token) {
-      next(HttpError(401, "Invalid token"));
+    if (user === null || user.token !== token) {
+      next(HttpError(401, "Not authorized"));
     }
-
+    req.user = {
+      _id: decode.id,
+    };
     next();
   });
 };

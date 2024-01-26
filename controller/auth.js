@@ -6,28 +6,33 @@ const { ctrlWrapper, HttpError } = require("../helpers");
 const User = require("../models/user");
 
 async function register(req, res, next) {
-  const { name, email, password } = req.body;
+  const { email, password } = req.body;
 
   const user = await User.findOne({ email });
   if (user) {
-    throw HttpError(409, "Email already used");
+    throw HttpError(409, "Email in use");
   }
   const hashPassword = await bcrypt.hash(password, 10);
 
-  await User.create({ name, email, password: hashPassword });
-  res.send("Register");
+  await User.create({ email, password: hashPassword });
+
+  res.status(201).json({
+    user: {
+      email,
+    },
+  });
 }
 
 const login = async (req, res, next) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
   if (!user) {
-    throw HttpError(401, "Email or password invalid");
+    throw HttpError(401, "Email or password is wrong");
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
-    throw HttpError(401, "Email or password invalid");
+    throw HttpError(401, "Email or password is wrong");
   }
 
   const token = jwt.sign(
@@ -38,7 +43,11 @@ const login = async (req, res, next) => {
 
   await User.findByIdAndUpdate(user._id, { token });
 
-  res.send({ token });
+  
+    res.json({
+      token,
+      user: { email }
+    });
 };
 
 const logOut = async (req, res, next) => {
