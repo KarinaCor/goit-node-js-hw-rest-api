@@ -43,11 +43,10 @@ const login = async (req, res, next) => {
 
   await User.findByIdAndUpdate(user._id, { token });
 
-  
-    res.json({
-      token,
-      user: { email }
-    });
+  res.json({
+    token,
+    user: { email },
+  });
 };
 
 const logOut = async (req, res, next) => {
