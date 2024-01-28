@@ -20,15 +20,16 @@ const authenticate = async (req, res, next) => {
     if (err) {
       next(HttpError(401, "Not authorized"));
     }
+     req.user = {
+       _id: decode.id,
+     };
 
     const user = await User.findById(decode.id);
 
     if (user === null || user.token !== token) {
       next(HttpError(401, "Not authorized"));
     }
-    req.user = {
-      _id: decode.id,
-    };
+   
     next();
   });
 };
