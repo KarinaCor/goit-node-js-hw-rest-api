@@ -58,12 +58,13 @@ const logOut = async (req, res, next) => {
 
 const getCurrent = async (req, res, next) => {
   const { email, subscription } = req.user;
-  res.json({ email, subscription });
+ 
+   res.json({ email, subscription });
 };
 
 module.exports = {
   register: ctrlWrapper(register),
   login: ctrlWrapper(login),
-  logout: ctrlWrapper(logOut),
+  logOut: ctrlWrapper(logOut),
   getCurrent: ctrlWrapper(getCurrent),
 };
