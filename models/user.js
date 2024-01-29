@@ -20,6 +20,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    avatarURL: {
+      type: String,
+      required: true,
+       default: null,
+    },
   },
   {
     versionKey: false,
