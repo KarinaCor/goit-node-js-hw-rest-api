@@ -1,21 +1,17 @@
 const multer = require("multer");
-const path = require("node:path");
-const crypto = require("node:crypto");
+const path = require("path");
 
-const tempDir = path.join(__dirname, "../", "tmp");
+const tempDir = path.join(__dirname, "../", "temp");
 
 const multerConfig = multer.diskStorage({
   destination: tempDir,
-
   filename: (req, file, cb) => {
-    const exname = path.extname(file.originalname);
-    const basename = path.basename(file.originalname, exname);
-    const suffix = crypto.randomUUID();
-    console.log(basename);
-    cb(null, `${basename}-${suffix}${exname}`);
+    cb(null, file.originalname);
   },
 });
 
-const upload = multer({ storage: multerConfig });
+const upload = multer({
+  storage: multerConfig,
+});
 
 module.exports = upload;
