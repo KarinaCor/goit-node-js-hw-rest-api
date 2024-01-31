@@ -19,12 +19,14 @@ async function register(req, res, next) {
   }
   const hashPassword = await bcrypt.hash(password, 10);
   const avatarURL = gravatar.url(email);
+   
 
-  await User.create({ email, password: hashPassword, avatarURL });
-
+ const newUser =  await User.create({ email, password: hashPassword, avatarURL });
+ 
   res.status(201).json({
     user: {
       email,
+      subscription: newUser.subscription,
     },
   });
 }
@@ -46,12 +48,13 @@ const login = async (req, res, next) => {
     process.env.JWT_SECRET,
     { expiresIn: "1h" }
   );
+    const { subscription } = user;
 
   await User.findByIdAndUpdate(user._id, { token });
 
   res.json({
     token,
-    user: { email },
+    user: { email, subscription }
   });
 };
 
