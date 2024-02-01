@@ -1,9 +1,11 @@
 const bcrypt = require("bcrypt");
+const crypto = require("node:crypto");
 const jwt = require("jsonwebtoken");
 const gravatar = require("gravatar");
 const path = require("node:path");
 const fs = require("node:fs/promises");
 const Jimp = require("jimp");
+const sendEmail = require("../helpers/sendEmail");
 
 const { ctrlWrapper, HttpError } = require("../helpers");
 const avatarsDir = path.join(__dirname, "../", "public", "avatars");
@@ -19,10 +21,24 @@ async function register(req, res, next) {
   }
   const hashPassword = await bcrypt.hash(password, 10);
   const avatarURL = gravatar.url(email);
-   
 
- const newUser =  await User.create({ email, password: hashPassword, avatarURL });
- 
+  const verifyToken = crypto.randomUUID();
+
+  await sendEmail({
+    to: email,
+    from: "mksmvkarina@gmail.com",
+    subject: "Welcome to Contacts",
+    html: `To confirm your registration please click on the <a href="http://localhost:3000/api/auth/verify/${verifyToken}">link</a>`,
+    text: `To confirm your registration please open the link http://localhost:3000/api/auth/verify/${verifyToken}`,
+  });
+
+  const newUser = await User.create({
+    email,
+    verifyToken,
+    password: hashPassword,
+    avatarURL,
+  });
+
   res.status(201).json({
     user: {
       email,
@@ -30,6 +46,24 @@ async function register(req, res, next) {
     },
   });
 }
+
+const verify = async (req, res, next) => {
+  const { token } = req.params;
+
+  try {
+    const user = await User.findOne({ verifyToken: token });
+
+    if (user === null) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    await User.findByIdAndUpdate(user._id, { verify: true, verifyToken: null });
+
+    res.send({ message: "Verification successful" });
+  } catch (error) {
+    next(error);
+  }
+};
 
 const login = async (req, res, next) => {
   const { email, password } = req.body;
@@ -43,18 +77,22 @@ const login = async (req, res, next) => {
     throw HttpError(401, "Email or password is wrong");
   }
 
+  if (user.verify === false) {
+    throw HttpError(401, "Your account is not verified");
+  }
+
   const token = jwt.sign(
     { id: user._id, name: user.name },
     process.env.JWT_SECRET,
     { expiresIn: "1h" }
   );
-    const { subscription } = user;
+  const { subscription } = user;
 
   await User.findByIdAndUpdate(user._id, { token });
 
   res.json({
     token,
-    user: { email, subscription }
+    user: { email, subscription },
   });
 };
 
@@ -94,6 +132,7 @@ const updateAvatar = async (req, res) => {
 
 module.exports = {
   register: ctrlWrapper(register),
+  verify: ctrlWrapper(verify),
   login: ctrlWrapper(login),
   logOut: ctrlWrapper(logOut),
   getCurrent: ctrlWrapper(getCurrent),
