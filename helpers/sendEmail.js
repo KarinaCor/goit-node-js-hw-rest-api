@@ -1,4 +1,3 @@
-
 const nodemailer = require("nodemailer");
 
 const transport = nodemailer.createTransport({
@@ -10,8 +9,8 @@ const transport = nodemailer.createTransport({
   },
 });
 
-function sendMail(message){
-    return transport.sendMail(message)
+function sendMail(message) {
+  return transport.sendMail(message);
 }
 
-module.exports = sendMail
+module.exports = sendMail;

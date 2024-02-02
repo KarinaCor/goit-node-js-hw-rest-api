@@ -28,8 +28,8 @@ async function register(req, res, next) {
     to: email,
     from: "mksmvkarina@gmail.com",
     subject: "Welcome to Contacts",
-    html: `To confirm your registration please click on the <a href="http://localhost:3000/api/auth/verify/${verifyToken}">link</a>`,
-    text: `To confirm your registration please open the link http://localhost:3000/api/auth/verify/${verifyToken}`,
+    html: `To confirm your registration please click on the <a href="http://localhost:3000/api/users/verify/${verifyToken}">link</a>`,
+    text: `To confirm your registration please open the link http://localhost:3000/api/users/verify/${verifyToken}`,
   });
 
   const newUser = await User.create({
@@ -48,10 +48,10 @@ async function register(req, res, next) {
 }
 
 const verify = async (req, res, next) => {
-  const { token } = req.params;
+  const { verifyToken } = req.params;
 
   try {
-    const user = await User.findOne({ verifyToken: token });
+    const user = await User.findOne({ verifyToken });
 
     if (user === null) {
       return res.status(404).send({ message: "User not found" });
@@ -63,6 +63,25 @@ const verify = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+const reVerification = async (req, res, next) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw HttpError(400, "missing required field email");
+  }
+  if (user.verify) {
+    throw HttpError(400, "Verification has already been passed");
+  }
+  await sendEmail({
+    to: email,
+    from: "mksmvkarina@gmail.com",
+    subject: "Welcome to Contacts",
+    html: `To confirm your registration please click on the <a href="http://localhost:3000/api/users/verify/${user.verifyToken}">link</a>`,
+    text: `To confirm your registration please open the link http://localhost:3000/api/users/verify/${user.verifyToken}`,
+  });
+  res.json({ message: "Verification email sent" });
 };
 
 const login = async (req, res, next) => {
@@ -137,4 +156,5 @@ module.exports = {
   logOut: ctrlWrapper(logOut),
   getCurrent: ctrlWrapper(getCurrent),
   updateAvatar: ctrlWrapper(updateAvatar),
+  reVerification: ctrlWrapper(reVerification),
 };

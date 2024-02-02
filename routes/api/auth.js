@@ -5,12 +5,15 @@ const { userSchema } = require("../../schemas/userSchemas");
 const ctrl = require("../../controller/auth");
 const validateBody = require("../../middlewares/validateBody");
 const upload = require("../../middlewares/upload");
+const { verifySchema } = require("../../schemas/VerifySchema");
 
 const router = express.Router();
 
 router.post("/register", validateBody(userSchema), ctrl.register);
 
-router.get("/verify/:verifyToken", authMiddleware, ctrl.verify);
+router.get("/verify/:verifyToken", ctrl.verify);
+
+router.post("/verify",validateBody(verifySchema), ctrl.reVerification);
 
 router.post("/login", validateBody(userSchema), ctrl.login);
 

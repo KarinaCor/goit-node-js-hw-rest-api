@@ -7,6 +7,4 @@ const validateIsBodyEmpty = (req, res, next) => {
   next();
 };
 
-
-
-module.exports = { validateIsBodyEmpty};
+module.exports = { validateIsBodyEmpty };

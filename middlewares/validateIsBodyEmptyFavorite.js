@@ -7,4 +7,4 @@ const validateIsBodyEmptyFavorite = (req, res, next) => {
   next();
 };
 
-module.exports = {  validateIsBodyEmptyFavorite };
+module.exports = { validateIsBodyEmptyFavorite };
